@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Studio Gen-2 | Precision Engineered Sound</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='none' stroke='%23D4AF37' stroke-width='3' opacity='0.8'/><circle cx='50' cy='50' r='25' fill='%23D4AF37' opacity='0.3'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════════
+           DESIGN TOKENS
+        ══════════════════════════════════════════ */
+        :root {
+            --gold:        #D4AF37;
+            --gold-dark:   #B8952A;
+            --gold-glow:   rgba(212,175,55,0.35);
+            --black:       #080808;
+            --card-bg:     rgba(255,255,255,0.025);
+            --border:      rgba(255,255,255,0.08);
+            --border-gold: rgba(212,175,55,0.35);
+            --text-dim:    rgba(255,255,255,0.55);
+            --font-display:'Cormorant Garamond', Georgia, serif;
+            --font-body:   'DM Sans', sans-serif;
+            --ease:        cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --r-card:      24px;
+            --r-pill:      50px;
+            --max-w:       1280px;
+        }
+
+        /* ══════════════════════════════════════════
+           RESET
+        ══════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            background: var(--black);
+            color: #fff;
+            line-height: 1.65;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        img { display: block; max-width: 100%; }
+        button { cursor: pointer; font-family: var(--font-body); }
+        a { text-decoration: none; color: inherit; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--gold), var(--gold-dark));
+            border-radius: 3px;
+        }
+
+        /* ══════════════════════════════════════════
+           PROGRESS BAR
+        ══════════════════════════════════════════ */
+        #scrollIndicator {
+            position: fixed; top: 0; left: 0;
+            height: 3px; width: 0%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-dark));
+            z-index: 1100;
+            transition: width 0.15s linear;
+        }
+
+        /* ══════════════════════════════════════════
+           NAV
+        ══════════════════════════════════════════ */
+        #nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 1.25rem 0;
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: padding 0.4s var(--ease), background 0.4s var(--ease);
+        }
+        #nav.scrolled { padding: 0.55rem 0; background: rgba(8,8,8,0.94); }
+
+        .nav-inner {
+            max-width: var(--max-w);
+            margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.75rem; font-weight: 600; letter-spacing: 0.12em;
+            background: linear-gradient(135deg,#fff,#bbb);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 2.75rem; list-style: none; }
+
+        .nav-link {
+            position: relative;
+            color: rgba(255,255,255,0.72);
+            font-size: 0.77rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute; bottom: -5px; left: 0;
+            width: 0; height: 2px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            transition: width 0.4s var(--ease);
+        }
+        .nav-link:hover, .nav-link.active { color: #fff; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        .nav-actions { display: flex; gap: 0.65rem; align-items: center; }
+
+        .nav-icon-btn {
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            transition: background 0.25s ease;
+        }
+        .nav-icon-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .nav-icon-btn:hover { background: rgba(255,255,255,0.08); }
+
+        .cart-badge {
+            position: absolute; top: -5px; right: -5px;
+            width: 18px; height: 18px;
+            background: linear-gradient(135deg,#ef4444,#ec4899);
+            border-radius: 50%; font-size: 0.6rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        #mobileMenuBtn { display: none; }
+
+        /* ══════════════════════════════════════════
+           MOBILE MENU
+        ══════════════════════════════════════════ */
+        #mobileMenu {
+            position: fixed; inset: 0;
+            background: rgba(8,8,8,0.96);
+            backdrop-filter: blur(24px);
+            z-index: 1050;
+            display: flex; align-items: center; justify-content: center;
+            transform: translateX(100%);
+            transition: transform 0.4s var(--ease);
+        }
+        #mobileMenu.open { transform: translateX(0); }
+
+        .mobile-nav { display: flex; flex-direction: column; align-items: center; gap: 2.25rem; list-style: none; }
+        .mobile-nav .nav-link { font-size: 1.5rem; }
+
+        /* ══════════════════════════════════════════
+           HERO
+        ══════════════════════════════════════════ */
+        .hero {
+            position: relative; height: 100vh; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hero-video {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%; object-fit: cover; z-index: 0;
+        }
+        .hero-overlay {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(135deg,rgba(8,8,8,.94) 0%,rgba(14,14,14,.87) 50%,rgba(8,8,8,.94) 100%);
+        }
+        .hero-content {
+            position: relative; z-index: 2;
+            text-align: center; padding: 0 2rem; max-width: 860px;
+        }
+
+        .floating-badge {
+            display: inline-block;
+            position: absolute; top: -38vh; right: -22vw;
+            background: rgba(212,175,55,.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212,175,55,.28);
+            padding: .6rem 1.4rem; border-radius: var(--r-pill);
+            font-size: .68rem; font-weight: 500;
+            letter-spacing: .13em; text-transform: uppercase; color: var(--gold);
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(4rem,11vw,10rem);
+            font-weight: 300; line-height: .95; letter-spacing: -.02em;
+            background: linear-gradient(160deg,#fff 40%,#777 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.75rem;
+        }
+        .hero-sub {
+            font-size: clamp(.95rem,1.8vw,1.2rem); font-weight: 300;
+            color: rgba(255,255,255,.82); max-width: 520px;
+            margin: 0 auto 3rem; line-height: 1.75;
+        }
+        .hero-ctas { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; }
+
+        /* ══════════════════════════════════════════
+           BUTTONS
+        ══════════════════════════════════════════ */
+        .btn-primary {
+            background: linear-gradient(135deg,var(--gold),var(--gold-dark));
+            color: var(--black); border: none;
+            font-weight: 600; font-size: .77rem;
+            text-transform: uppercase; letter-spacing: .08em;
+            padding: .95rem 2.5rem; border-radius: var(--r-pill);
+            position: relative; overflow: hidden;
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute; top: 0; left: -110%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+            transition: left .55s ease;
+        }
+        .btn-primary:hover::before { left: 110%; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 32px var(--gold-glow); }
+
+        .btn-secondary {
+            background: transparent; color: #fff;
+            border: 1px solid rgba(255,255,255,.28);
+            font-weight: 500; font-size: .77rem;
+            text-transform: uppercase; letter-spacing: .08em;
+            padding: .95rem 2.5rem; border-radius: var(--r-pill);
+            transition: all .3s ease;
+        }
+        .btn-secondary:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,.08); }
+
+        .btn-full { width: 100%; }
+
+        .btn-outline-lg {
+            background: transparent; color: #fff;
+            border: 1px solid rgba(255,255,255,.25);
+            font-size: .82rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: .1em;
+            padding: 1.15rem 3.5rem; border-radius: var(--r-pill);
+            transition: all .3s ease;
+        }
+        .btn-outline-lg:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,.07); }
+
+        /* ══════════════════════════════════════════
+           STATS
+        ══════════════════════════════════════════ */
+        .stats { padding: 7rem 2rem; background: linear-gradient(180deg,var(--black) 0%,#0e0e0e 100%); }
+        .stats-grid {
+            max-width: var(--max-w); margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4,1fr);
+        }
+        .stat-item {
+            text-align: center; padding: 2.5rem 1rem; position: relative;
+        }
+        .stat-item:not(:last-child)::after {
+            content: ''; position: absolute;
+            right: 0; top: 50%; transform: translateY(-50%);
+            width: 1px; height: 36px; background: rgba(255,255,255,.1);
+        }
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem,5vw,3.75rem); font-weight: 300; letter-spacing: -.02em;
+            background: linear-gradient(135deg,#f0c040,#c99820);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: .55rem;
+        }
+        .stat-label {
+            font-size: .68rem; text-transform: uppercase;
+            letter-spacing: .14em; color: var(--text-dim); font-weight: 500;
+        }
+
+        /* ══════════════════════════════════════════
+           FEATURED PRODUCT
+        ══════════════════════════════════════════ */
+        .featured { padding: 8rem 2rem; }
+        .featured-inner {
+            max-width: var(--max-w); margin: 0 auto;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 5rem; align-items: center;
+        }
+
+        /* image card */
+        .product-img-wrap {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-card);
+            overflow: hidden; position: relative;
+            transition: transform .5s var(--ease), border-color .4s ease, box-shadow .5s ease;
+        }
+        .product-img-wrap:hover {
+            transform: translateY(-12px) scale(1.015);
+            border-color: var(--border-gold);
+            box-shadow: 0 32px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(212,175,55,.18);
+        }
+        .product-img-wrap::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg,rgba(212,175,55,.06),transparent);
+            opacity: 0; transition: opacity .4s ease; z-index: 1;
+        }
+        .product-img-wrap:hover::before { opacity: 1; }
+
+        #heroProductImg {
+            width: 100%; height: 560px; object-fit: cover; display: block;
+            transition: transform .6s var(--ease), opacity .32s ease;
+        }
+        .product-img-wrap:hover #heroProductImg { transform: scale(1.07); }
+
+        .img-hover-cta {
+            position: absolute; inset: 0; z-index: 2;
+            background: linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 55%);
+            display: flex; align-items: flex-end; padding: 2rem;
+            opacity: 0; transition: opacity .45s ease;
+        }
+        .product-img-wrap:hover .img-hover-cta { opacity: 1; }
+
+        /* ── colour swatches ── */
+        .color-row { margin-top: 1.75rem; }
+        .color-row-label {
+            display: flex; align-items: center; gap: .75rem; margin-bottom: .9rem;
+        }
+        .color-row-label .lbl-text {
+            font-size: .64rem; text-transform: uppercase;
+            letter-spacing: .14em; color: var(--text-dim);
+        }
+        #colorLabel {
+            font-size: .7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .1em; color: var(--gold);
+        }
+        .swatches { display: flex; flex-wrap: wrap; gap: .65rem; }
+
+        .swatch {
+            width: 44px; height: 44px; border-radius: 12px;
+            border: 3px solid rgba(255,255,255,.14);
+            cursor: pointer; position: relative;
+            transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+        .swatch:hover { border-color: var(--gold); transform: scale(1.1); }
+        .swatch.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(212,175,55,.4), 0 4px 14px rgba(212,175,55,.28);
+        }
+        .swatch-tip {
+            position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            background: rgba(12,12,12,.95); border: 1px solid rgba(255,255,255,.1);
+            color: #fff; font-size: .6rem; font-weight: 500;
+            letter-spacing: .09em; text-transform: uppercase;
+            padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+            pointer-events: none; opacity: 0; transition: opacity .2s ease;
+        }
+        .swatch:hover .swatch-tip { opacity: 1; }
+
+        /* product info */
+        .product-info { padding-left: 1.5rem; }
+        .series-label {
+            display: inline-block; font-size: .68rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .16em;
+            background: linear-gradient(90deg,#e8b830,#c99820);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 1rem;
+        }
+        .product-title {
+            font-family: var(--font-display);
+            font-size: clamp(3rem,6vw,5.5rem); font-weight: 300;
+            line-height: .95; margin-bottom: 1.2rem;
+        }
+        .product-price {
+            font-family: var(--font-display);
+            font-size: clamp(2rem,4vw,3rem); font-weight: 300;
+            letter-spacing: -.02em; margin-bottom: 2rem;
+        }
+        .product-desc {
+            font-size: 1rem; color: rgba(255,255,255,.82);
+            line-height: 1.75; max-width: 420px; margin-bottom: 2.5rem;
+        }
+        hr.specs-div { border: none; border-top: 1px solid rgba(255,255,255,.08); margin-bottom: 2rem; }
+        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        .spec-label {
+            display: flex; align-items: center; gap: .4rem;
+            font-size: .7rem; text-transform: uppercase;
+            letter-spacing: .1em; color: var(--text-dim); margin-bottom: .35rem;
+        }
+        .spec-label svg { width: 14px; height: 14px; stroke: var(--text-dim); fill: none; stroke-width: 1.5; }
+        .spec-value { font-size: 1.3rem; font-weight: 600; }
+
+        /* ══════════════════════════════════════════
+           COLLECTION
+        ══════════════════════════════════════════ */
+        .collection { padding: 8rem 2rem; background: rgba(255,255,255,.012); }
+        .section-header { text-align: center; margin-bottom: 5.5rem; }
+        .section-eyebrow {
+            display: inline-block; font-size: .68rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .16em;
+            background: linear-gradient(90deg,#e8b830,#c99820);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 1.25rem;
+        }
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(3rem,7vw,5.5rem); font-weight: 300; line-height: .95;
+        }
+
+        .cards-grid {
+            max-width: var(--max-w); margin: 0 auto;
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem;
+        }
+
+        .coll-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-card);
+            overflow: hidden; cursor: pointer;
+            /* initial state for entrance animation — overridden by JS */
+        }
+        .coll-card:hover {
+            transform: translateY(-14px) scale(1.02);
+            border-color: var(--border-gold);
+            box-shadow: 0 32px 64px rgba(0,0,0,.4), 0 0 0 1px rgba(212,175,55,.18);
+        }
+
+        .card-img-area { position: relative; overflow: hidden; }
+        .card-main-img {
+            width: 100%; height: 340px; object-fit: cover; display: block;
+            transition: transform .6s var(--ease), opacity .32s ease;
+        }
+        .coll-card:hover .card-main-img { transform: scale(1.08); }
+
+        .card-body { padding: 1.5rem 1.5rem 1.75rem; }
+        .card-name {
+            font-family: var(--font-display); font-size: 1.35rem; font-weight: 400;
+            margin-bottom: .3rem; transition: color .25s ease;
+        }
+        .coll-card:hover .card-name { color: var(--gold); }
+        .card-price { font-size: 1.5rem; font-weight: 300; margin-bottom: 1.25rem; }
+
+        /* thumbnails */
+        .thumb-row {
+            display: flex; gap: .55rem;
+            padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.07);
+        }
+        .thumb {
+            width: 46px; height: 46px; border-radius: 10px; object-fit: cover;
+            border: 2px solid rgba(255,255,255,.1);
+            cursor: pointer; opacity: .6;
+            transition: border-color .25s ease, opacity .25s ease, transform .25s ease;
+        }
+        .thumb:hover, .thumb.active { border-color: var(--gold); opacity: 1; transform: scale(1.08); }
+
+        .collection-cta { text-align: center; margin-top: 5rem; }
+
+        /* ══════════════════════════════════════════
+           FOOTER
+        ══════════════════════════════════════════ */
+        footer {
+            padding: 5.5rem 2rem;
+            border-top: 1px solid rgba(255,255,255,.07);
+        }
+        .footer-inner {
+            max-width: var(--max-w); margin: 0 auto;
+            display: flex; flex-direction: column; align-items: center; gap: 2.5rem;
+        }
+        .social-row { display: flex; gap: 1rem; }
+        .social-btn {
+            width: 46px; height: 46px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .25s ease, border-color .25s ease;
+        }
+        .social-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .social-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.2); }
+        .footer-copy {
+            font-size: .7rem; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: .14em;
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .featured-inner { grid-template-columns: 1fr; gap: 3.5rem; }
+            .product-info { padding-left: 0; }
+            .cards-grid { grid-template-columns: repeat(2,1fr); }
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            #mobileMenuBtn { display: flex; }
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .stat-item:nth-child(2)::after { display: none; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .floating-badge { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scrollIndicator"></div>
+
+    <!-- ═══════ NAV ═══════ -->
+    <header id="nav">
+        <div class="nav-inner">
+            <div class="nav-logo">AURA</div>
+            <ul class="nav-links">
+                <li><a href="#home"   class="nav-link">Sound</a></li>
+                <li><a href="#design" class="nav-link">Design</a></li>
+                <li><a href="#craft"  class="nav-link">Craftsmanship</a></li>
+                <li><a href="#studio" class="nav-link active">Studio Gen-2</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="nav-icon-btn" aria-label="Search">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+                <button class="nav-icon-btn" aria-label="Cart">
+                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    <span class="cart-badge">3</span>
+                </button>
+                <button class="nav-icon-btn" id="mobileMenuBtn" aria-label="Menu">
+                    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════ MOBILE MENU ═══════ -->
+    <div id="mobileMenu">
+        <ul class="mobile-nav">
+            <li><a href="#home"    class="nav-link">Sound</a></li>
+            <li><a href="#design"  class="nav-link">Design</a></li>
+            <li><a href="#craft"   class="nav-link">Craftsmanship</a></li>
+            <li><a href="#studio"  class="nav-link active">Studio Gen-2</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- ═══════ HERO ═══════ -->
+    <section id="home" class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-royal-blue-lines-background-12608-large.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="floating-badge">Spring 2026 Collection</span>
+            <h1 class="hero-title">Studio Gen-2</h1>
+            <p class="hero-sub">Precision engineered for the purest sound experience. Where silence meets perfection.</p>
+            <div class="hero-ctas">
+                <button class="btn-primary" onclick="goTo('studio')">Discover Studio Gen-2</button>
+                <button class="btn-secondary">Watch the Film</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ STATS ═══════ -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-value">50h</div><div class="stat-label">Battery Life</div></div>
+            <div class="stat-item"><div class="stat-value">40mm</div><div class="stat-label">Beryllium Driver</div></div>
+            <div class="stat-item"><div class="stat-value">−42dB</div><div class="stat-label">ANC</div></div>
+            <div class="stat-item"><div class="stat-value">2 yr</div><div class="stat-label">Warranty</div></div>
+        </div>
+    </section>
+
+    <!-- ═══════ FEATURED PRODUCT ═══════ -->
+    <section id="studio" class="featured">
+        <div class="featured-inner">
+
+            <!-- left -->
+            <div>
+                <div class="product-img-wrap">
+                    <img id="heroProductImg"
+                         src="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=1200&q=85"
+                         alt="Studio Gen-2">
+                    <div class="img-hover-cta">
+                        <button class="btn-primary btn-full">View Details</button>
+                    </div>
+                </div>
+
+                <!-- 6 colour swatches -->
+                <div class="color-row">
+                    <div class="color-row-label">
+                        <span class="lbl-text">Colour</span>
+                        <span id="colorLabel">Midnight Black</span>
+                    </div>
+                    <div class="swatches" id="colorSwatches">
+                        <div class="swatch active"
+                             style="background:#111"
+                             data-color="Midnight Black"
+                             data-img="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Midnight Black</span></div>
+
+                        <div class="swatch"
+                             style="background:linear-gradient(135deg,#d0d0d0,#e8e8e8)"
+                             data-color="Arctic Silver"
+                             data-img="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Arctic Silver</span></div>
+
+                        <div class="swatch"
+                             style="background:linear-gradient(135deg,#e8c96a,#c9a227)"
+                             data-color="Champagne Gold"
+                             data-img="https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Champagne Gold</span></div>
+
+                        <div class="swatch"
+                             style="background:linear-gradient(135deg,#0d1b3e,#1a3260)"
+                             data-color="Deep Navy"
+                             data-img="https://images.unsplash.com/photo-1577174881658-0f30ed549adc?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Deep Navy</span></div>
+
+                        <div class="swatch"
+                             style="background:linear-gradient(135deg,#1a3326,#2a5241)"
+                             data-color="Forest Green"
+                             data-img="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Forest Green</span></div>
+
+                        <div class="swatch"
+                             style="background:linear-gradient(135deg,#e8b4b8,#d4898f)"
+                             data-color="Blush Rose"
+                             data-img="https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=1200&q=85"
+                             onclick="selectColor(this)">
+                            <span class="swatch-tip">Blush Rose</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- right -->
+            <div class="product-info">
+                <span class="series-label">Studio Series</span>
+                <h2 class="product-title">Studio Gen-2</h2>
+                <div class="product-price">$499</div>
+                <p class="product-desc">Engineered in Milan with aerospace-grade materials and custom beryllium drivers. Experience sound without compromise.</p>
+                <hr class="specs-div">
+                <div class="specs-grid">
+                    <div>
+                        <div class="spec-label">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+                            Driver Size
+                        </div>
+                        <div class="spec-value">40mm Beryllium</div>
+                    </div>
+                    <div>
+                        <div class="spec-label">
+                            <svg viewBox="0 0 24 24"><path d="M12 2v20M8 6v12M4 10v4M16 6v12M20 10v4" stroke-linecap="round"/></svg>
+                            Frequency
+                        </div>
+                        <div class="spec-value">5Hz – 40kHz</div>
+                    </div>
+                </div>
+                <button class="btn-primary btn-full">Add to Cart</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ COLLECTION ═══════ -->
+    <section class="collection">
+        <div class="section-header">
+            <div class="section-eyebrow">The Collection</div>
+            <h2 class="section-title">Discover More</h2>
+        </div>
+
+        <div class="cards-grid">
+
+            <!-- Pods Pro -->
+            <div class="coll-card">
+                <div class="card-img-area">
+                    <img id="pods-main" class="card-main-img"
+                         src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80"
+                         alt="Pods Pro">
+                </div>
+                <div class="card-body">
+                    <div class="card-name">Pods Pro</div>
+                    <div class="card-price">$249</div>
+                    <div class="thumb-row">
+                        <img class="thumb active" alt="v1"
+                             src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('pods-main',this)">
+                        <img class="thumb" alt="v2"
+                             src="https://images.unsplash.com/photo-1598331668826-20cecc596b86?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('pods-main',this)">
+                        <img class="thumb" alt="v3"
+                             src="https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('pods-main',this)">
+                        <img class="thumb" alt="v4"
+                             src="https://images.unsplash.com/photo-1610945264803-c22b62831e9c?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('pods-main',this)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Omni Speaker -->
+            <div class="coll-card">
+                <div class="card-img-area">
+                    <img id="omni-main" class="card-main-img"
+                         src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=600&q=80"
+                         alt="Omni Speaker">
+                </div>
+                <div class="card-body">
+                    <div class="card-name">Omni Speaker</div>
+                    <div class="card-price">$399</div>
+                    <div class="thumb-row">
+                        <img class="thumb active" alt="v1"
+                             src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('omni-main',this)">
+                        <img class="thumb" alt="v2"
+                             src="https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('omni-main',this)">
+                        <img class="thumb" alt="v3"
+                             src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('omni-main',this)">
+                        <img class="thumb" alt="v4"
+                             src="https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('omni-main',this)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Studio Stand -->
+            <div class="coll-card">
+                <div class="card-img-area">
+                    <img id="stand-main" class="card-main-img"
+                         src="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80"
+                         alt="Studio Stand">
+                </div>
+                <div class="card-body">
+                    <div class="card-name">Studio Stand</div>
+                    <div class="card-price">$89</div>
+                    <div class="thumb-row">
+                        <img class="thumb active" alt="v1"
+                             src="https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('stand-main',this)">
+                        <img class="thumb" alt="v2"
+                             src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('stand-main',this)">
+                        <img class="thumb" alt="v3"
+                             src="https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('stand-main',this)">
+                        <img class="thumb" alt="v4"
+                             src="https://images.unsplash.com/photo-1577174881658-0f30ed549adc?auto=format&fit=crop&w=120&q=70"
+                             onclick="switchImg('stand-main',this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="collection-cta">
+            <button class="btn-outline-lg">View Entire Collection</button>
+        </div>
+    </section>
+
+    <!-- ═══════ FOOTER ═══════ -->
+    <footer id="contact">
+        <div class="footer-inner">
+            <div class="social-row">
+                <a href="#" class="social-btn" aria-label="Twitter">
+                    <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+                </a>
+                <a href="#" class="social-btn" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+                <a href="#" class="social-btn" aria-label="YouTube">
+                    <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+                </a>
+            </div>
+            <p class="footer-copy">© 2026 AURA Acoustics. Crafted in Milan. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        /* smooth scroll helper */
+        function goTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+
+        /* nav */
+        window.addEventListener('scroll', () => {
+            document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 80);
+            const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+            document.getElementById('scrollIndicator').style.width = pct + '%';
+        });
+
+        /* mobile menu */
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('open');
+        });
+        document.getElementById('mobileMenu').addEventListener('click', e => {
+            if (e.target.classList.contains('nav-link'))
+                document.getElementById('mobileMenu').classList.remove('open');
+        });
+
+        /* active nav link */
+        window.addEventListener('scroll', () => {
+            let cur = '';
+            ['home','studio'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.offsetTop < window.scrollY + 220) cur = id;
+            });
+            document.querySelectorAll('.nav-link').forEach(a =>
+                a.classList.toggle('active', a.getAttribute('href') === `#${cur}`)
+            );
+        });
+
+        /* parallax hero */
+        window.addEventListener('scroll', () => {
+            const v = document.querySelector('.hero-video');
+            if (v) v.style.transform = `translateY(${window.pageYOffset * 0.45}px)`;
+        });
+
+        /* colour swatch */
+        function selectColor(el) {
+            document.querySelectorAll('#colorSwatches .swatch').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('colorLabel').textContent = el.dataset.color;
+            const img = document.getElementById('heroProductImg');
+            img.style.opacity = '0';
+            setTimeout(() => { img.src = el.dataset.img; img.style.opacity = '1'; }, 320);
+        }
+
+        /* collection thumbnail */
+        function switchImg(mainId, thumb) {
+            thumb.closest('.thumb-row').querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+            const main = document.getElementById(mainId);
+            main.style.opacity = '0';
+            setTimeout(() => {
+                main.src = thumb.src.replace('w=120','w=600');
+                main.style.opacity = '1';
+            }, 320);
+        }
+
+        /* card entrance */
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.style.opacity = '1';
+                    e.target.style.transform = '';
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.coll-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(36px)';
+            card.style.transition = 'opacity .75s ease, transform .75s cubic-bezier(.25,.46,.45,.94), border-color .4s ease, box-shadow .5s ease';
+            io.observe(card);
+        });
+    </script>
+</body>
+</html>
